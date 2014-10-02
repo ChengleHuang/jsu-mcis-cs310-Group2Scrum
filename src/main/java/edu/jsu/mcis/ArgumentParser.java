@@ -1,52 +1,95 @@
 package edu.jsu.mcis;
 
+import java.util.*;
 
 public class ArgumentParser
 {
-	private int[] integerArray;
-	private int length, width, heighth;
-	String[] stringArray;
-	String program;
-	ArgumentValues myValues;
-	
-	public ArgumentParser(String[] passedArgs)
+	private List<String> arrayOfNames;
+	private List<String> arrayOfValues;
+	public ArgumentParser()
 	{
-		stringArray = passedArgs;
-		program = passedArgs[0];//Will change to ** new ArgumentValues(passedArgs[0]);
-		ArgumentValues[] myValues = new ArgumentValues[passedArgs.length-1];
-		for(int i = 1; i < passedArgs.length; i++)
+		arrayOfNames = new ArrayList<String>();
+		arrayOfValues = new ArrayList<String>();
+	}
+	
+	public void addArg(String name)
+	{
+		arrayOfNames.add(name);
+		arrayOfValues.add(" ");
+	}
+	
+	public int getNumArguments()
+	{
+		return arrayOfValues.size();
+	}
+
+	public String parse(String something)
+	{
+		String nextValue = "";
+		try
 		{
-			myValues[i-1].setName(passedArgs[i]);
+			Scanner p = new Scanner(something);
+			String program = p.next();
+			int count = 0;
+			while(p.hasNext())
+			{
+				nextValue = p.next();
+				arrayOfValues.set(count, nextValue);
+				count++;
+			}
+			for(int i = 0; i < arrayOfValues.size(); i++)
+			{
+				if(arrayOfValues.get(i) == " ")
+				{
+					return arrayOfNames.get(i) + " missing";
+				}
+			}
 		}
+		catch (IndexOutOfBoundsException e)
+		{
+			return "Unrecognized argument " + nextValue;
+		}
+		return "Good";
 	}
 	
-	public int getNumberOfArguments()
+	public String getArgumentValue(String name)
 	{
-		return (stringArray.length - 1);
+		for(int i = 0; i < arrayOfNames.size(); i++)
+		{
+			if(arrayOfNames.get(i) == name)
+			{
+				return arrayOfValues.get(i);
+			}
+		}
+		return "Invalid Argument Name";
 	}
 	
-	public String getProgramName()
+	public String getArgumentType(String argValue)
 	{
-		return myValues.getProgram();
+		int a;
+		double b;
+		try
+		{
+			a=Integer.parseInt(argValue);
+			return "Integer";
+		}
+		catch(NumberFormatException e1)
+		{
+			try
+			{
+				b=Double.parseDouble(argValue);
+				return "Double";
+			}
+			catch (NumberFormatException e2)
+			{
+				return "String";
+			}
+		}
+		
 	}
 	
-	public int getLength()
+	public String getHelpInfo()
 	{
-		return myValues.getLength();
-	}
-	
-	public int getWidth()
-	{
-		return myValues.getWidth();
-	}
-	
-	public int getHeighth()
-	{
-		return myValues.getHeighth();
-	}
-	
-	public static void main(String[] args)// example: java ArgumentParser {7 6 2}
-	{
-		ArgumentParser p = new ArgumentParser(args);
+		return "help info";
 	}
 }
