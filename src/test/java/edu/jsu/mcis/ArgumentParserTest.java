@@ -14,57 +14,51 @@ public class ArgumentParserTest
 	}
 	
 	@Test
-	public void testAddArgument()
+	public void testSingleArgumentAdder()
 	{
+		String[] myString = new String[1];
+		myString[0] = "4";
 		parser.addArg("length");
-		assertEquals(1, parser.getNumArguments());	
-	}
-	
-	@Test
-	public void testSingleArgumentParse()
-	{
-		parser.addArg("length");
-		parser.parse("Calculator 4");
+		parser.adder(myString);
 		assertEquals("4", parser.getArgumentValue("length"));
 	}
 	
 	@Test
-	public void testDoubleArgumentParse()
+	public void testDoubleArgumentAdder()
 	{
+		String[] myString = new String[2];
+		myString[0] = "4";
+		myString[1] = "7";
 		parser.addArg("length");
 		parser.addArg("width");
-		parser.parse("Calculator 4 7");
+		parser.adder(myString);
 		assertEquals("4", parser.getArgumentValue("length"));
 		assertEquals("7", parser.getArgumentValue("width"));
 	}
 	
 	@Test
-	public void testMultipleArgumentParse()
+	public void testMultipleArgumentAdder()
 	{
+		String[] myString = new String[3];
+		myString[0] = "4";
+		myString[1] = "7";
+		myString[2] = "9";
 		parser.addArg("length");
 		parser.addArg("width");
 		parser.addArg("height");
-		parser.parse("Calculator 4 7 9");
+		parser.adder(myString);
 		assertEquals("4", parser.getArgumentValue("length"));
 		assertEquals("7", parser.getArgumentValue("width"));
 		assertEquals("9", parser.getArgumentValue("height"));
 	}
 	
 	@Test
-	public void testInvalidArgumentNameGiven()
-	{
-		parser.addArg("length");
-		parser.parse("Calculator 4");
-		assertEquals("Invalid Argument Name", parser.getArgumentValue("width"));
-	}
-	
-	@Test
-	public void testTooManyArguments()
+	public void testCompleteParsing()
 	{
 		parser.addArg("length");
 		parser.addArg("width");
 		parser.addArg("height");
-		assertEquals("Unrecognized argument 5", parser.parse("Calculator 4 7 9 5"));
+		assertEquals("Parsing Completed", parser.parse("VolumeCalculator 7 5 2"));
 	}
 	
 	@Test
@@ -73,41 +67,48 @@ public class ArgumentParserTest
 		parser.addArg("length");
 		parser.addArg("width");
 		parser.addArg("height");
-		assertEquals("height missing", parser.parse("Calculator 4 7"));
+		assertEquals("usage: java VolumeCalculator length width height\n" +
+					"VolumeCalculator.java: error: the following arguments are required: height", 
+					parser.parse("VolumeCalculator 7 5"));
 	}
 	
 	@Test
-	public void testPetNumberRainyBathrooms()
+	public void testTooManyArguments()
 	{
-		parser.addArg("pet");
-		parser.addArg("number");
-		parser.addArg("rainy");
-		parser.addArg("bathrooms");
-		parser.parse("Program dog 2 true 3.5");
-		assertEquals("dog", parser.getArgumentValue("pet"));
-		assertEquals("2", parser.getArgumentValue("number"));
-		assertEquals("true", parser.getArgumentValue("rainy"));
-		assertEquals("3.5", parser.getArgumentValue("bathrooms"));
+		parser.addArg("length");
+		parser.addArg("width");
+		parser.addArg("height");
+		assertEquals("usage: java VolumeCalculator length width height\n" +
+					"VolumeCalculator.java: error: unrecognized arguments: 43", 
+					parser.parse("VolumeCalculator 7 5 2 43"));
 	}
 	
 	@Test
-	public void testDataTypeInfo()
+	public void testProgramHelp()
 	{
-		parser.addArg("pet");
-		parser.addArg("number");
-		parser.addArg("rainy");
-		parser.addArg("bathrooms");
-		parser.parse("Program dog 2 true 3.5");
-		assertEquals("String", parser.getArgumentType(parser.getArgumentValue("pet")));
-		assertEquals("Integer", parser.getArgumentType(parser.getArgumentValue("number")));
-		assertEquals("String", parser.getArgumentType(parser.getArgumentValue("rainy")));
-		assertEquals("Double", parser.getArgumentType(parser.getArgumentValue("bathrooms")));
+		parser.addArgumentHelp("-h", "usage: java VolumeCalculator length width height\n");
+		assertEquals("usage: java VolumeCalculator length width height\n" + "\n" +"Calculate the volume of a box.\n "+"\n"+
+						"positional arguments: length the length of the box\n"+"width the width of the box\n"+"height the height of the box\n", 
+							parser.getHelpArgumentValue("-h"));
 	}
 	
 	@Test
-	public void testHelpInfo()
+	public void testAddHelpWithArgument() 
 	{
-		String helpInfo = parser.getHelpInfo();
-		assertEquals("help info", helpInfo);
+		parser.addArgumentHelp("length", "Please enter the length as a whole number");
+		assertEquals("   Please enter the length as a whole number   ", parser.getHelpArgumentValue("length"));
 	}
+	
+	@Test
+	public void testParseAString()
+	{	
+		parser.addArg("length");
+		parser.addArg("width");
+		parser.addArg("height");
+		parser.parse("VolumeCalculator 7 6 2");
+		assertEquals("7", parser.getArgumentValue("length"));
+		assertEquals("6", parser.getArgumentValue("width"));
+		assertEquals("2", parser.getArgumentValue("height"));
+	}
+	
 }

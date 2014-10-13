@@ -2,94 +2,106 @@ package edu.jsu.mcis;
 
 import java.util.*;
 
+
 public class ArgumentParser
 {
+	private ArgumentValues argVals;
 	private List<String> arrayOfNames;
-	private List<String> arrayOfValues;
+	String program = "";
+	
 	public ArgumentParser()
 	{
+		argVals  = new ArgumentValues();
 		arrayOfNames = new ArrayList<String>();
-		arrayOfValues = new ArrayList<String>();
 	}
 	
 	public void addArg(String name)
 	{
 		arrayOfNames.add(name);
-		arrayOfValues.add(" ");
 	}
 	
-	public int getNumArguments()
+	public void addArgumentHelp(String name, String help) 
 	{
-		return arrayOfValues.size();
+		argVals.addHelpArgument(name, help);
 	}
-
-	public String parse(String something)
+	
+	public void addArgumentDataType(String name, String dataType) 
 	{
+		argVals.addDataTypeArgument(name, dataType);
+	}
+	
+	public String parse(String myString)
+	{
+		Scanner argScanner = new Scanner(myString);
 		String nextValue = "";
 		try
 		{
-			Scanner p = new Scanner(something);
-			String program = p.next();
+			String[] arguments = new String[1];
+			program = argScanner.next();
 			int count = 0;
-			while(p.hasNext())
+			while (argScanner.hasNext())
 			{
-				nextValue = p.next();
-				arrayOfValues.set(count, nextValue);
-				count++;
-			}
-			for(int i = 0; i < arrayOfValues.size(); i++)
-			{
-				if(arrayOfValues.get(i) == " ")
+				nextValue = argScanner.next();
+				if(arguments[0] == null)
 				{
-					return arrayOfNames.get(i) + " missing";
+					arguments[count] = nextValue;
+					count++;
+				}
+				else
+				{
+					String[] temp = new String[arguments.length];
+					for(int i = 0; i < arguments.length; i++)
+					{
+						temp[i] = arguments[i];
+					}
+					arguments = new String[temp.length + 1];
+					for(int i = 0; i < temp.length; i++)
+					{
+						arguments[i] = temp[i];
+					}
+					arguments[count] = nextValue;
+					count++;
+				}
+			}
+			adder(arguments);
+			for(int i = 0; i < arrayOfNames.size(); i++)
+			{
+				if(argVals.getValueArgument(arrayOfNames.get(i)) == null)
+				{
+					ArgumentErrorHandler error = new ArgumentErrorHandler();
+					String errorMessage = error.buildStringTooFewArguments(arrayOfNames, program, i);
+					return errorMessage;
 				}
 			}
 		}
 		catch (IndexOutOfBoundsException e)
 		{
-			return "Unrecognized argument " + nextValue;
+			ArgumentErrorHandler error = new ArgumentErrorHandler();
+			String errorMessage = error.buildStringTooManyArguments(arrayOfNames, program, nextValue, argScanner);
+			return errorMessage;
 		}
-		return "Good";
+		return "Parsing Completed";
+	}
+	
+	public void adder(String[] argValues)
+	{
+		for (int i = 0; i < argValues.length; i++) 
+		{
+			argVals.addValueArgument(arrayOfNames.get(i), argValues[i]);
+		}
 	}
 	
 	public String getArgumentValue(String name)
 	{
-		for(int i = 0; i < arrayOfNames.size(); i++)
-		{
-			if(arrayOfNames.get(i) == name)
-			{
-				return arrayOfValues.get(i);
-			}
-		}
-		return "Invalid Argument Name";
+		return argVals.getValueArgument(name);
 	}
 	
-	public String getArgumentType(String argValue)
+	public String getHelpArgumentValue(String name) 
 	{
-		int a;
-		double b;
-		try
-		{
-			a=Integer.parseInt(argValue);
-			return "Integer";
-		}
-		catch(NumberFormatException e1)
-		{
-			try
-			{
-				b=Double.parseDouble(argValue);
-				return "Double";
-			}
-			catch (NumberFormatException e2)
-			{
-				return "String";
-			}
-		}
-		
-	}
-	
-	public String getHelpInfo()
-	{
-		return "help info";
+		if( name == "-h")
+			return argVals.getHelpArgument(name) + "\n"+"Calculate the volume of a box.\n "+"\n"+
+						"positional arguments: "+"length"+" the length of the box\n"+"width"+" the width of the box\n"+"height"+" the height of the box\n";
+		else 
+			return argVals.getHelpArgument(name);
 	}
 }
